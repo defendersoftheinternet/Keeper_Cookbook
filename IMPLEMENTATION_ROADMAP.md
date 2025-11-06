@@ -1,38 +1,37 @@
-# Keeper AI Backend - Implementation Roadmap
+# Keeper AI Backend - Implementation Guide
 
 **Project**: Keeper AI Discovery Engine
 **Target**: Small businesses using Square (< $1M revenue)
-**Timeline**: 12 weeks to production MVP
 **Tech Stack**: Python, Google Cloud, Vertex AI Gemini Pro, Anthropic Claude Opus 4
 
 ---
 
 ## Overview
 
-This roadmap breaks down the implementation of Keeper's AI backend into manageable phases. Each phase builds on the previous one and includes concrete deliverables, testing strategies, and success criteria.
+This guide breaks down the implementation of Keeper's AI backend into manageable phases. Each phase builds on the previous one and includes concrete deliverables, testing strategies, and success criteria.
 
 **Key Documents**:
 - 📘 **Architecture Spec**: `KEEPER_ARCHITECTURE.md` - Complete system design
 - 📁 **Repository Structure**: `REPOSITORY_STRUCTURE.md` - Code organization
-- 🚀 **Quick Start**: `QUICK_START_GUIDE.md` - Get running in 1-2 days
+- 🚀 **Quick Start**: `QUICK_START_GUIDE.md` - Get up and running
 
 ---
 
-## Phase Breakdown
+## Implementation Phases
 
-| Phase | Duration | Goal | Success Criteria |
-|-------|----------|------|------------------|
-| **Phase 1** | Week 1-2 | Foundation & Data Pipeline | Bashful Beauty data in BigQuery |
-| **Phase 2** | Week 3-5 | Core MCPs (Layers 1-2) | All analysis MCPs working |
-| **Phase 3** | Week 6-7 | Analyst Agent | Nightly discoveries generated |
-| **Phase 4** | Week 8-9 | Advisor Agent & Actions | Complete discoveries with action plans |
-| **Phase 5** | Week 10 | API & Integration | Keeper_UI showing real discoveries |
-| **Phase 6** | Week 11 | External Intelligence | Reviews, competitors, social data |
-| **Phase 7** | Week 12 | Testing & Optimization | Production-ready, cost-optimized |
+| Phase | Goal | Success Criteria |
+|-------|------|------------------|
+| **Phase 1** | Foundation & Data Pipeline | Bashful Beauty data in BigQuery |
+| **Phase 2** | Core MCPs (Layers 1-2) | All analysis MCPs working |
+| **Phase 3** | Analyst Agent | Nightly discoveries generated |
+| **Phase 4** | Advisor Agent & Actions | Complete discoveries with action plans |
+| **Phase 5** | API & Integration | Keeper_UI showing real discoveries |
+| **Phase 6** | External Intelligence | Reviews, competitors, social data |
+| **Phase 7** | Testing & Optimization | Production-ready, cost-optimized |
 
 ---
 
-## Phase 1: Foundation & Data Pipeline (Week 1-2)
+## Phase 1: Foundation & Data Pipeline
 
 ### Goals
 - Set up Google Cloud infrastructure
@@ -41,7 +40,7 @@ This roadmap breaks down the implementation of Keeper's AI backend into manageab
 
 ### Tasks
 
-#### Week 1: GCP Setup
+#### GCP Setup
 - [ ] Create GCP project `keeper-production`
 - [ ] Enable required APIs (BigQuery, Firestore, Cloud Run, Vertex AI, etc.)
 - [ ] Create service account for development
@@ -60,7 +59,7 @@ This roadmap breaks down the implementation of Keeper's AI backend into manageab
 
 ---
 
-#### Week 2: Square Data Sync
+#### Square Data Sync
 - [ ] Implement `utils/square_client.py` - Square API wrapper
 - [ ] Implement `services/square_sync_service.py` - Sync service
 - [ ] Create Square OAuth flow (get access token from 1Password)
@@ -100,7 +99,7 @@ FROM keeper.square_cache WHERE business_id = 'bashful_beauty_123';
 
 ---
 
-## Phase 2: Core MCPs - Layers 1-2 (Week 3-5)
+## Phase 2: Core MCPs - Layers 1-2
 
 ### Goals
 - Build all Data Access MCPs (Layer 1)
@@ -109,20 +108,20 @@ FROM keeper.square_cache WHERE business_id = 'bashful_beauty_123';
 
 ### Tasks
 
-#### Week 3: Layer 1 - Data Access MCPs (3 MCPs)
+#### Layer 1 - Data Access MCPs (3 MCPs)
 
-**Day 1-2: square_data.mcp**
+**square_data.mcp**
 - [ ] Implement `mcps/data_access/square_data.mcp.py`
 - [ ] Tools: `get_transactions()`, `get_customers()`, `get_employees()`, `get_catalog()`, `get_customer_timeline()`
 - [ ] Test with Bashful Beauty data
 - [ ] Add caching layer (Redis) for frequently accessed data
 
-**Day 3: external_data.mcp**
+**external_data.mcp**
 - [ ] Implement `mcps/data_access/external_data.mcp.py`
 - [ ] Tools: `get_reviews()`, `get_competitor_data()`, `get_social_mentions()` (stub implementations for now)
 - [ ] Set up Cloud Storage bucket structure
 
-**Day 4-5: memory.mcp**
+**memory.mcp**
 - [ ] Implement `mcps/data_access/memory.mcp.py`
 - [ ] Tools: `get_business_profile()`, `get_employee_profiles()`, `save_investigation()`, `get_investigation()`
 - [ ] Set up Firestore collections (`businesses/`, `users/`)
@@ -138,55 +137,46 @@ FROM keeper.square_cache WHERE business_id = 'bashful_beauty_123';
 
 ---
 
-#### Week 4: Layer 2 - Analysis MCPs Part 1 (4 MCPs)
+#### Layer 2 - Analysis MCPs (7 MCPs)
 
-**Day 1-2: pattern_detector.mcp**
+**pattern_detector.mcp**
 - [ ] Implement `mcps/analysis/pattern_detector.mcp.py`
 - [ ] Tools: `find_retention_patterns()`, `find_revenue_patterns()`, `find_visit_frequency_patterns()`, `detect_anomalies()`
 - [ ] Use SQL + statistical methods (z-scores, significance tests)
 - [ ] Test on Bashful Beauty data
 
-**Day 3: segment_analyzer.mcp**
+**segment_analyzer.mcp**
 - [ ] Implement `mcps/analysis/segment_analyzer.mcp.py`
 - [ ] Tools: `segment_by_behavior()`, `segment_by_service_preference()`, `segment_by_lifecycle_stage()`
 - [ ] Use RFM analysis, clustering
 - [ ] Test segmentation accuracy
 
-**Day 4: time_surgeon.mcp**
+**time_surgeon.mcp**
 - [ ] Implement `mcps/analysis/time_surgeon.mcp.py`
 - [ ] Tools: `analyze_by_time_of_day()`, `analyze_by_day_of_week()`, `analyze_appointment_gaps()`
 - [ ] Test time-based patterns
 
-**Day 5: employee_analyzer.mcp**
+**employee_analyzer.mcp**
 - [ ] Implement `mcps/analysis/employee_analyzer.mcp.py`
 - [ ] Tools: `get_employee_performance()`, `compare_employees()`, `find_training_gaps()`
 - [ ] Test on Bashful Beauty employees (Jennifer, Amanda, Marcus, Sarah)
 
-**Deliverables**:
-- ✅ 4 Analysis MCPs implemented
-- ✅ Unit tests for each tool
-- ✅ Example outputs documented
-
----
-
-#### Week 5: Layer 2 - Analysis MCPs Part 2 (3 MCPs)
-
-**Day 1-2: customer_forensics.mcp**
+**customer_forensics.mcp**
 - [ ] Implement `mcps/analysis/customer_forensics.mcp.py`
 - [ ] Tools: `get_customer_journey()`, `predict_churn_risk()`, `find_defection_signals()`
 - [ ] Build churn prediction model (BigQuery ML logistic regression)
 - [ ] Test on known churned customers
 
-**Day 3: financial_surgeon.mcp**
+**financial_surgeon.mcp**
 - [ ] Implement `mcps/analysis/financial_surgeon.mcp.py`
 - [ ] Tools: `analyze_revenue_by_service()`, `find_upsell_opportunities()`, `calculate_service_profitability()`
 - [ ] Test margin calculations
 
-**Day 4: competitor_intel.mcp**
+**competitor_intel.mcp**
 - [ ] Implement `mcps/analysis/competitor_intel.mcp.py`
 - [ ] Tools: `find_nearby_competitors()`, `compare_pricing()` (stub for now, will implement scraping in Phase 6)
 
-**Day 5: Integration Testing**
+**Integration Testing**
 - [ ] Test all Layer 2 MCPs together
 - [ ] Verify outputs are consistent
 - [ ] Document expected output formats
@@ -204,7 +194,7 @@ FROM keeper.square_cache WHERE business_id = 'bashful_beauty_123';
 
 ---
 
-## Phase 3: Analyst Agent (Week 6-7)
+## Phase 3: Analyst Agent
 
 ### Goals
 - Build Analyst Agent with discovery_mode
@@ -213,21 +203,21 @@ FROM keeper.square_cache WHERE business_id = 'bashful_beauty_123';
 
 ### Tasks
 
-#### Week 6: Analyst Agent Core
+#### Analyst Agent Core
 
-**Day 1-2: Base Agent Implementation**
+**Base Agent Implementation**
 - [ ] Implement `agents/base_agent.py` - Shared functionality
 - [ ] Implement `agents/analyst_agent.py` skeleton
 - [ ] Set up MCP loading mechanism
 - [ ] Create agent configuration (which MCPs to load, in what order)
 
-**Day 3-4: Discovery Mode Implementation**
+**Discovery Mode Implementation**
 - [ ] Implement `discovery_mode()` method
 - [ ] Orchestrate Layer 1 MCPs (data collection)
 - [ ] Orchestrate Layer 2 MCPs (analysis)
 - [ ] Aggregate findings into structured format
 
-**Day 5: Add Intelligence Layer (Stub)**
+**Add Intelligence Layer (Stub)**
 - [ ] Create stub implementations for Intelligence MCPs (Layer 3)
 - [ ] `customer_psychology.mcp`, `spa_wisdom.mcp` (basic rules, no LLM yet)
 - [ ] Test discovery pipeline without LLM synthesis
@@ -239,22 +229,22 @@ FROM keeper.square_cache WHERE business_id = 'bashful_beauty_123';
 
 ---
 
-#### Week 7: LLM Integration
+#### LLM Integration
 
-**Day 1-2: Vertex AI Setup**
+**Vertex AI Setup**
 - [ ] Set up Vertex AI credentials
 - [ ] Implement `utils/llm_client.py` - Wrapper for Gemini Pro and Claude Opus 4
 - [ ] Test basic LLM calls (prompt → response)
 - [ ] Implement token counting and cost tracking
 
-**Day 3-4: Synthesis Implementation**
+**Synthesis Implementation**
 - [ ] Build synthesis prompts for Analyst Agent
 - [ ] Convert MCP findings → LLM context
 - [ ] Call Gemini Pro with aggregated findings
 - [ ] Parse LLM response into structured insights
 - [ ] Test on real Bashful Beauty data
 
-**Day 5: Validation Layer**
+**Validation Layer**
 - [ ] Implement `mcps/validation/confidence_scorer.mcp.py`
 - [ ] Implement `mcps/validation/impact_predictor.mcp.py`
 - [ ] Filter insights by confidence × impact threshold
@@ -286,7 +276,7 @@ assert all(i['impact'] >= 1000 for i in insights), "All insights should have $1K
 
 ---
 
-## Phase 4: Advisor Agent & Actions (Week 8-9)
+## Phase 4: Advisor Agent & Actions
 
 ### Goals
 - Build Advisor Agent to convert insights → actionable discoveries
@@ -295,26 +285,26 @@ assert all(i['impact'] >= 1000 for i in insights), "All insights should have $1K
 
 ### Tasks
 
-#### Week 8: Advisor Agent
+#### Advisor Agent Core
 
-**Day 1-2: Advisor Agent Core**
+**Advisor Agent Implementation**
 - [ ] Implement `agents/advisor_agent.py`
 - [ ] Mode: `action_planning_mode(insight)` - Take Analyst insight, generate action plan
 - [ ] Mode: `script_writing_mode(situation)` - Generate conversation scripts
 - [ ] Mode: `campaign_mode(goal)` - Design marketing campaigns
 
-**Day 3: Action Layer MCPs - Part 1**
+**Action Layer MCPs - Part 1**
 - [ ] Implement `mcps/action/script_generator.mcp.py`
 - [ ] Tools: `generate_customer_outreach_script()`, `generate_sales_script()`, `generate_employee_coaching_script()`
 - [ ] Test script quality with real scenarios
 
-**Day 4: Action Layer MCPs - Part 2**
+**Action Layer MCPs - Part 2**
 - [ ] Implement `mcps/action/campaign_builder.mcp.py`
 - [ ] Tools: `build_retention_campaign()`, `build_acquisition_campaign()`, `estimate_campaign_roi()`
 - [ ] Implement `mcps/action/optimization_architect.mcp.py`
 - [ ] Tools: `optimize_scheduling()`, `optimize_pricing()`, `design_process_improvement()`
 
-**Day 5: Integration**
+**Integration**
 - [ ] Connect Analyst → Advisor pipeline
 - [ ] For each Analyst insight, call Advisor.action_planning_mode()
 - [ ] Test end-to-end discovery generation
@@ -327,27 +317,27 @@ assert all(i['impact'] >= 1000 for i in insights), "All insights should have $1K
 
 ---
 
-#### Week 9: Output Formatting & Storage
+#### Output Formatting & Storage
 
-**Day 1-2: Output Formatting**
+**Output Formatting**
 - [ ] Implement `mcps/validation/output_formatter.mcp.py`
 - [ ] Tool: `format_discovery(insight_data)` - Convert to frontend JSON schema
 - [ ] Match exact schema from `Keeper_UI/composables/useMockData.ts`
 - [ ] Test formatting accuracy
 
-**Day 3: Firestore Storage**
+**Firestore Storage**
 - [ ] Create Firestore schema for discoveries
 - [ ] Collection: `discoveries/{businessId}/insights/{discoveryId}`
 - [ ] Implement storage in `services/discovery_service.py`
 - [ ] Add discovery stats tracking
 
-**Day 4: Discovery Service**
+**Discovery Service**
 - [ ] Implement complete `services/discovery_service.py`
 - [ ] Orchestrate: Analyst → Advisor → Format → Store
 - [ ] Add error handling and logging
 - [ ] Test nightly run simulation
 
-**Day 5: Local Testing**
+**Local Testing**
 - [ ] Run complete discovery pipeline locally
 - [ ] Generate discoveries for Bashful Beauty
 - [ ] Verify discoveries in Firestore
@@ -380,7 +370,7 @@ gcloud firestore query --collection-ids=insights --filter='business_id=bashful_b
 
 ---
 
-## Phase 5: API & Frontend Integration (Week 10)
+## Phase 5: API & Frontend Integration
 
 ### Goals
 - Build FastAPI REST API
@@ -389,33 +379,33 @@ gcloud firestore query --collection-ids=insights --filter='business_id=bashful_b
 
 ### Tasks
 
-**Day 1: FastAPI Setup**
+**FastAPI Setup**
 - [ ] Implement `api/main.py` - FastAPI app
 - [ ] Implement `api/routes/discoveries.py` - GET /discoveries, POST /discoveries/:id/complete
 - [ ] Implement `api/routes/health.py` - GET /health
 - [ ] Implement `api/middleware/auth.py` - Firebase token verification
 - [ ] Test locally with Postman/curl
 
-**Day 2: Chat Endpoint (Simple)**
+**Chat Endpoint (Simple)**
 - [ ] Implement basic `agents/investigator_agent.py`
 - [ ] Mode: `question_answering_mode(question)` - Answer simple questions about discoveries
 - [ ] Implement `api/routes/chat.py` - POST /chat
 - [ ] Test chat flow
 
-**Day 3: Cloud Run Deployment**
+**Cloud Run Deployment**
 - [ ] Create `Dockerfile` for API service
 - [ ] Build Docker image
 - [ ] Deploy to Cloud Run
 - [ ] Set up environment variables in Cloud Run
 - [ ] Test deployed API
 
-**Day 4: Frontend Integration**
+**Frontend Integration**
 - [ ] Update `Keeper_UI/composables/useDiscoveries.ts` to call Cloud Run API
 - [ ] Update `Keeper_UI/composables/useAuth.ts` to get Firebase token
 - [ ] Test login → fetch discoveries flow
 - [ ] Verify discoveries render correctly
 
-**Day 5: End-to-End Testing**
+**End-to-End Testing**
 - [ ] Run discovery pipeline → Store in Firestore
 - [ ] Login to Keeper_UI → See real discoveries
 - [ ] Mark discovery as complete → Verify in Firestore
@@ -436,7 +426,7 @@ gcloud firestore query --collection-ids=insights --filter='business_id=bashful_b
 
 ---
 
-## Phase 6: External Intelligence (Week 11)
+## Phase 6: External Intelligence
 
 ### Goals
 - Build web scraping for external data (reviews, competitors, social)
@@ -445,31 +435,31 @@ gcloud firestore query --collection-ids=insights --filter='business_id=bashful_b
 
 ### Tasks
 
-**Day 1: Web Scraper Service**
+**Web Scraper Service**
 - [ ] Implement `services/scraper_service.py`
 - [ ] Use Playwright for scraping
 - [ ] Methods: `scrape_google_reviews()`, `scrape_yelp_reviews()`, `scrape_competitors()`
 - [ ] Store in Cloud Storage
 - [ ] Deploy to Cloud Functions
 
-**Day 2: External Intelligence MCPs - Part 1**
+**External Intelligence MCPs - Part 1**
 - [ ] Implement `mcps/external_intelligence/review_monitor.mcp.py`
 - [ ] Tools: `get_recent_reviews()`, `analyze_sentiment_trends()`, `extract_common_complaints()`
 - [ ] Implement `mcps/external_intelligence/competitor_discovery.mcp.py`
 - [ ] Tools: `find_new_competitors()`, `track_competitor_reviews()`
 
-**Day 3: External Intelligence MCPs - Part 2**
+**External Intelligence MCPs - Part 2**
 - [ ] Implement `mcps/external_intelligence/customer_migration.mcp.py`
 - [ ] Tool: `find_lost_customers_at_competitors()` - Cross-reference customer names in competitor reviews
 - [ ] Implement `mcps/external_intelligence/social_listening.mcp.py`
 - [ ] Tools: `track_brand_mentions()`, `analyze_influencer_impact()`
 
-**Day 4: Integration with Analyst**
+**Integration with Analyst**
 - [ ] Update Analyst Agent to call External Intelligence MCPs
 - [ ] Add external data to discovery context
 - [ ] Test enhanced discoveries (internal + external data)
 
-**Day 5: Scheduling**
+**Scheduling**
 - [ ] Set up Cloud Scheduler for scraping (daily at 1 AM)
 - [ ] Test scheduled scraping
 - [ ] Verify external data flows into discoveries
@@ -488,7 +478,7 @@ gcloud firestore query --collection-ids=insights --filter='business_id=bashful_b
 
 ---
 
-## Phase 7: Testing & Optimization (Week 12)
+## Phase 7: Testing & Optimization
 
 ### Goals
 - Comprehensive testing (unit, integration, end-to-end)
@@ -498,27 +488,27 @@ gcloud firestore query --collection-ids=insights --filter='business_id=bashful_b
 
 ### Tasks
 
-**Day 1: Comprehensive Testing**
+**Comprehensive Testing**
 - [ ] Write unit tests for all MCPs (target: 80% coverage)
 - [ ] Write integration tests for agent pipelines
 - [ ] Write end-to-end test (Square sync → Discovery → API → Frontend)
 - [ ] Test with multiple business types (spa, restaurant, retail)
 
-**Day 2: Performance Optimization**
+**Performance Optimization**
 - [ ] Profile discovery pipeline (identify bottlenecks)
 - [ ] Optimize BigQuery queries (add indexes, reduce data scanned)
 - [ ] Implement caching (Redis) for frequently accessed data
 - [ ] Parallelize MCP calls where possible
 - [ ] Target: Discovery runtime < 3 minutes per business
 
-**Day 3: Cost Optimization**
+**Cost Optimization**
 - [ ] Analyze LLM token usage
 - [ ] Optimize prompts (reduce tokens while maintaining quality)
 - [ ] Implement dynamic model selection (Gemini Flash for low-priority, Opus 4 for critical)
 - [ ] Batch API calls to reduce overhead
 - [ ] Target: LLM cost < $6/month per business
 
-**Day 4: Production Setup**
+**Production Setup**
 - [ ] Set up Cloud Scheduler for nightly discovery (3 AM)
 - [ ] Set up Cloud Scheduler for Square sync (12:01 AM)
 - [ ] Set up Cloud Scheduler for scraping (1 AM)
@@ -526,7 +516,7 @@ gcloud firestore query --collection-ids=insights --filter='business_id=bashful_b
 - [ ] Set up error logging (Cloud Logging)
 - [ ] Create runbook for common issues
 
-**Day 5: Acceptance Testing**
+**Acceptance Testing**
 - [ ] Run discovery pipeline for Bashful Beauty
 - [ ] Steven/manager reviews discoveries for quality
 - [ ] Validate action plans are actionable
@@ -551,23 +541,23 @@ gcloud firestore query --collection-ids=insights --filter='business_id=bashful_b
 
 ---
 
-## Post-MVP: Next Features
+## Post-MVP: Future Enhancements
 
-After completing the 12-week MVP, prioritize these enhancements:
+After completing the MVP, prioritize these enhancements:
 
-### Month 4: Scale & Reliability
+### Scale & Reliability
 - [ ] Multi-business support (not just Bashful Beauty)
 - [ ] Onboarding flow (new business signup → data sync → first discoveries)
 - [ ] Pattern Memory implementation (Vertex AI Vector Search)
 - [ ] Historical outcome tracking (did discoveries lead to results?)
 
-### Month 5: Advanced Features
+### Advanced Features
 - [ ] Investigator Agent enhancements (deep chat, explanations)
 - [ ] Crisis Manager MCP (viral negative review detection)
 - [ ] Industry Wisdom MCPs for restaurant, retail (currently just spa)
 - [ ] Campaign builder automation (actually send emails/SMS)
 
-### Month 6: Intelligence Improvements
+### Intelligence Improvements
 - [ ] Advanced customer psychology (personalization)
 - [ ] Predictive analytics (forecast revenue, churn)
 - [ ] A/B testing framework (test action plan variations)
@@ -634,25 +624,6 @@ After completing the 12-week MVP, prioritize these enhancements:
 
 ---
 
-## Communication & Checkpoints
-
-### Weekly Sync (Every Friday)
-- [ ] Demo current progress
-- [ ] Review blockers
-- [ ] Update timeline if needed
-- [ ] Get feedback from Ray/Steven
-
-### Milestone Reviews
-- [ ] End of Phase 2: Review MCP outputs
-- [ ] End of Phase 3: Review first discoveries
-- [ ] End of Phase 5: Test frontend integration
-- [ ] End of Phase 7: Final acceptance testing
-
-### Daily Updates (Async)
-- Post in Slack: What you completed, what's next, any blockers
-
----
-
 ## Success Definition
 
 **MVP is successful if**:
@@ -683,6 +654,6 @@ After completing the 12-week MVP, prioritize these enhancements:
 
 ---
 
-**Good luck, Greg! This is going to be an amazing product. Let's build something transformative for small business owners.** 🚀
+**Let's build something transformative for small business owners.** 🚀
 
 —Ray & Claude

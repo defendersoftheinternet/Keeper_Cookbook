@@ -1,6 +1,6 @@
 # Keeper AI Backend - Quick Start Guide
 
-This guide will get you from zero to running discoveries in 1-2 days using the Bashful Beauty dataset.
+This guide will get you from zero to running discoveries using the Bashful Beauty dataset.
 
 ## Prerequisites
 
@@ -10,17 +10,15 @@ This guide will get you from zero to running discoveries in 1-2 days using the B
 - Access to Bashful Beauty Square data (OAuth credentials in 1Password)
 - Git and GitHub access
 
-## Phase 1: Environment Setup (2-3 hours)
+## Setup Phase: Environment Setup
 
 ### 1. Clone Repository and Set Up Python Environment
 
 ```bash
-# Create new repo (if not already created)
+# Clone repository
 cd ~/Code
-mkdir Keeper_Cookbook
+git clone https://github.com/defendersoftheinternet/Keeper_Cookbook.git
 cd Keeper_Cookbook
-git init
-git remote add origin https://github.com/defendersoftheinternet/Keeper_Cookbook.git
 
 # Create Python virtual environment
 python3 -m venv venv
@@ -247,7 +245,7 @@ docker-compose ps
 redis-cli ping  # Should return PONG
 ```
 
-## Phase 2: Sync Bashful Beauty Data (3-4 hours)
+## Data Sync Phase: Sync Bashful Beauty Data
 
 ### 1. Create Square API Client
 
@@ -521,7 +519,7 @@ bq query --use_legacy_sql=false \
 # Should show 2000+ transactions
 ```
 
-## Phase 3: Build First MCP (1-2 hours)
+## Implementation Phase: Build First MCP
 
 ### 1. Create MCP Base Class
 
@@ -802,289 +800,21 @@ python tests/test_square_data_mcp.py
 # ✅ All tests passed!
 ```
 
-## Phase 4: Build First Analyst Agent (2-3 hours)
-
-### 1. Implement pattern_detector.mcp (simple version)
-
-```bash
-mkdir -p mcps/analysis
-cat > mcps/analysis/pattern_detector.mcp.py << 'EOF'
-"""Pattern Detector MCP - Find statistical anomalies and trends"""
-from typing import List, Dict, Any
-from mcps.base_mcp import BaseMCP
-
-class PatternDetectorMCP(BaseMCP):
-    def find_retention_patterns(self, segment: str = 'all') -> List[Dict[str, Any]]:
-        """
-        Find customer retention patterns
-
-        Returns:
-            List of retention pattern findings
-        """
-        query = f"""
-        WITH customer_visits AS (
-          SELECT
-            customer_id,
-            COUNT(*) as visit_count,
-            MIN(created_at) as first_visit,
-            MAX(created_at) as last_visit,
-            DATE_DIFF(CURRENT_DATE(), DATE(MAX(created_at)), DAY) as days_since_last_visit
-          FROM `{self.dataset_id}.square_cache`
-          WHERE business_id = '{self.business_id}'
-            AND customer_id IS NOT NULL
-          GROUP BY customer_id
-        )
-        SELECT
-          COUNT(*) as total_customers,
-          COUNTIF(visit_count = 1) as one_time_customers,
-          COUNTIF(visit_count >= 2) as returning_customers,
-          ROUND(COUNTIF(visit_count >= 2) / COUNT(*) * 100, 2) as retention_rate,
-          AVG(visit_count) as avg_visits_per_customer,
-          AVG(days_since_last_visit) as avg_days_since_last_visit
-        FROM customer_visits
-        """
-
-        results = self._query_bigquery(query)
-
-        if results:
-            result = results[0]
-            return [{
-                'pattern': 'overall_retention',
-                'total_customers': result['total_customers'],
-                'one_time_customers': result['one_time_customers'],
-                'returning_customers': result['returning_customers'],
-                'retention_rate': result['retention_rate'],
-                'avg_visits_per_customer': result['avg_visits_per_customer'],
-                'avg_days_since_last_visit': result['avg_days_since_last_visit']
-            }]
-
-        return []
-
-    def find_revenue_patterns(self, grouping: str = 'service') -> List[Dict[str, Any]]:
-        """
-        Find revenue patterns by service, employee, or time
-
-        Args:
-            grouping: 'service', 'employee', or 'day_of_week'
-        """
-        if grouping == 'service':
-            query = f"""
-            SELECT
-              service_name,
-              COUNT(*) as transaction_count,
-              SUM(amount_cents) / 100 as total_revenue,
-              AVG(amount_cents) / 100 as avg_revenue
-            FROM `{self.dataset_id}.square_cache`
-            WHERE business_id = '{self.business_id}'
-              AND created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
-            GROUP BY service_name
-            ORDER BY total_revenue DESC
-            """
-
-        return self._query_bigquery(query)
-EOF
-```
-
-### 2. Create Minimal Analyst Agent
-
-```bash
-mkdir -p agents
-cat > agents/analyst_agent.py << 'EOF'
-"""Analyst Agent - Deep data investigation and pattern discovery"""
-from typing import List, Dict, Any
-from mcps.data_access.square_data_mcp import SquareDataMCP
-from mcps.analysis.pattern_detector_mcp import PatternDetectorMCP
-import json
-
-class AnalystAgent:
-    def __init__(self, business_id: str):
-        self.business_id = business_id
-        self.mode = None
-
-        # Load MCPs
-        self.mcps = {
-            'square_data': SquareDataMCP(business_id),
-            'pattern_detector': PatternDetectorMCP(business_id)
-        }
-
-    def discovery_mode(self) -> List[Dict[str, Any]]:
-        """
-        Nightly comprehensive analysis
-
-        Returns:
-            List of raw insights (before LLM synthesis)
-        """
-        print(f"[Analyst] Starting discovery mode for {self.business_id}")
-
-        # 1. Get basic data
-        customers = self.mcps['square_data'].get_customers()
-        employees = self.mcps['square_data'].get_employees()
-
-        print(f"[Analyst] Found {len(customers)} customers, {len(employees)} employees")
-
-        # 2. Find patterns
-        retention = self.mcps['pattern_detector'].find_retention_patterns()
-        revenue_by_service = self.mcps['pattern_detector'].find_revenue_patterns('service')
-
-        print(f"[Analyst] Retention rate: {retention[0]['retention_rate']}%")
-        print(f"[Analyst] Top service: {revenue_by_service[0] if revenue_by_service else 'None'}")
-
-        # 3. Generate insights (simplified - no LLM yet)
-        insights = []
-
-        # Insight 1: Retention analysis
-        if retention:
-            ret = retention[0]
-            if ret['retention_rate'] < 70:
-                insights.append({
-                    'title': f"Customer retention below industry average",
-                    'description': f"Only {ret['retention_rate']}% of customers return (industry avg: 78%)",
-                    'impact': (100 - ret['retention_rate']) * 100,  # Simplified
-                    'confidence': 85,
-                    'data': ret
-                })
-
-        # Insight 2: Revenue concentration
-        if revenue_by_service:
-            top_service = revenue_by_service[0]
-            insights.append({
-                'title': f"{top_service['service_name']} is your top revenue driver",
-                'description': f"${top_service['total_revenue']:.0f} from {top_service['transaction_count']} transactions",
-                'impact': top_service['total_revenue'],
-                'confidence': 95,
-                'data': top_service
-            })
-
-        print(f"[Analyst] Generated {len(insights)} insights")
-
-        return insights
-
-
-if __name__ == "__main__":
-    # Test analyst agent
-    agent = AnalystAgent('bashful_beauty_123')
-    insights = agent.discovery_mode()
-
-    print("\n" + "="*80)
-    print("INSIGHTS DISCOVERED:")
-    print("="*80)
-    for i, insight in enumerate(insights, 1):
-        print(f"\n{i}. {insight['title']}")
-        print(f"   {insight['description']}")
-        print(f"   Impact: ${insight['impact']:.0f}")
-        print(f"   Confidence: {insight['confidence']}%")
-EOF
-
-# Run test
-python agents/analyst_agent.py
-
-# Expected output:
-# [Analyst] Starting discovery mode for bashful_beauty_123
-# [Analyst] Found 200 customers, 8 employees
-# [Analyst] Retention rate: 67.0%
-# [Analyst] Top service: Brazilian Wax
-# [Analyst] Generated 2 insights
-#
-# ================================================================================
-# INSIGHTS DISCOVERED:
-# ================================================================================
-#
-# 1. Customer retention below industry average
-#    Only 67.0% of customers return (industry avg: 78%)
-#    Impact: $3300
-#    Confidence: 85%
-#
-# 2. Brazilian Wax is your top revenue driver
-#    $12400 from 186 transactions
-#    Impact: $12400
-#    Confidence: 95%
-```
-
-## Phase 5: Test End-to-End (30 minutes)
-
-```bash
-# Create end-to-end test script
-cat > scripts/run_local_discovery.py << 'EOF'
-"""Run discovery pipeline locally"""
-import sys
-sys.path.insert(0, '.')
-
-from agents.analyst_agent import AnalystAgent
-import json
-
-def run_discovery(business_id: str):
-    print(f"\n{'='*80}")
-    print(f"RUNNING DISCOVERY FOR: {business_id}")
-    print(f"{'='*80}\n")
-
-    # Initialize agent
-    analyst = AnalystAgent(business_id)
-
-    # Run discovery
-    insights = analyst.discovery_mode()
-
-    # Print results
-    print(f"\n{'='*80}")
-    print(f"DISCOVERIES ({len(insights)} found)")
-    print(f"{'='*80}\n")
-
-    for i, insight in enumerate(insights, 1):
-        print(f"{i}. {insight['title']}")
-        print(f"   {insight['description']}")
-        print(f"   Impact: ${insight['impact']:.0f} | Confidence: {insight['confidence']}%")
-        print()
-
-    return insights
-
-if __name__ == "__main__":
-    business_id = 'bashful_beauty_123'
-    insights = run_discovery(business_id)
-
-    print(f"\n✅ Discovery complete! Found {len(insights)} actionable insights.")
-EOF
-
-chmod +x scripts/run_local_discovery.py
-
-# Run it
-python scripts/run_local_discovery.py
-```
-
-## What You've Accomplished
+## Next Steps
 
 After completing this quick start, you will have:
 
 1. ✅ **GCP infrastructure set up** - BigQuery, Firestore, Cloud Storage, service accounts
 2. ✅ **8 years of Bashful Beauty data synced** - 2000+ transactions in BigQuery
 3. ✅ **First MCP working** - `square_data.mcp` fetching real data
-4. ✅ **Second MCP working** - `pattern_detector.mcp` finding retention patterns
-5. ✅ **First Agent working** - `AnalystAgent` generating insights
-6. ✅ **End-to-end test passing** - Discovery pipeline running locally
 
-## Next Steps
-
-Now that you have the foundation working:
-
-1. **Add more MCPs** - Implement remaining analysis layer MCPs:
-   - `segment_analyzer.mcp` - Customer segmentation
-   - `employee_analyzer.mcp` - Employee performance
-   - `customer_forensics.mcp` - Individual customer analysis
-
-2. **Add LLM synthesis** - Integrate Vertex AI Gemini Pro:
-   - Modify `AnalystAgent.discovery_mode()` to call LLM
-   - Use MCP findings as context for richer insights
-
-3. **Build Advisor Agent** - Convert insights to action plans:
-   - Implement `AdvisorAgent.action_planning_mode()`
-   - Add `script_generator.mcp` and `output_formatter.mcp`
-
-4. **Deploy to Cloud Run** - Make it run nightly:
-   - Build Docker image
-   - Deploy `discovery_service.py` to Cloud Run
-   - Set up Cloud Scheduler
-
-5. **Connect to Keeper_UI** - Build FastAPI and integrate:
-   - Implement `api/main.py`
-   - Test with frontend
+Continue with the [Implementation Guide](IMPLEMENTATION_ROADMAP.md) to:
+- Build remaining MCPs (30 more)
+- Implement Analyst Agent
+- Add LLM synthesis
+- Build Advisor Agent
+- Deploy to Cloud Run
+- Integrate with Keeper_UI
 
 ## Troubleshooting
 
@@ -1106,10 +836,12 @@ Now that you have the foundation working:
 
 ## Resources
 
-- **Full Architecture Spec**: `/Users/rayhernandez/Keeper_UI/KEEPER_ARCHITECTURE.md`
-- **Repository Structure**: `/Users/rayhernandez/Keeper_UI/REPOSITORY_STRUCTURE.md`
+- **Full Architecture Spec**: `KEEPER_ARCHITECTURE.md`
+- **Implementation Guide**: `IMPLEMENTATION_ROADMAP.md`
+- **Repository Structure**: `REPOSITORY_STRUCTURE.md`
+- **Frontend Mapping**: `FRONTEND_BACKEND_MAPPING.md`
 - **Square API Docs**: https://developer.squareup.com/docs
 - **BigQuery Docs**: https://cloud.google.com/bigquery/docs
 - **Vertex AI Docs**: https://cloud.google.com/vertex-ai/docs
 
-Good luck, Greg! 🚀
+Good luck! 🚀

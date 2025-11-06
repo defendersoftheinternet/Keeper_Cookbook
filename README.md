@@ -11,8 +11,8 @@ Keeper is a discovery engine that analyzes Square merchant data to generate nigh
 **New to the project? Start here:**
 
 1. 📘 Read **[KEEPER_ARCHITECTURE.md](KEEPER_ARCHITECTURE.md)** - Complete system design (agents, MCPs, infrastructure)
-2. 🏃 Follow **[QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)** - Get running in 1-2 days with Bashful Beauty data
-3. 🗺️ Check **[IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md)** - 12-week plan to production
+2. 🏃 Follow **[QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)** - Get up and running with Bashful Beauty data
+3. 🗺️ Check **[IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md)** - Phase-by-phase implementation guide
 
 ---
 
@@ -24,7 +24,7 @@ Keeper is a discovery engine that analyzes Square merchant data to generate nigh
 |----------|---------|-----|
 | **[KEEPER_ARCHITECTURE.md](KEEPER_ARCHITECTURE.md)** | Complete architecture specification with all 3 agents and 31 MCPs | Understanding the system design |
 | **[QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)** | Step-by-step setup and first implementation | Getting started quickly |
-| **[IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md)** | 12-week phase-by-phase implementation plan | Project planning |
+| **[IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md)** | Phase-by-phase implementation guide with deliverables | Project planning |
 | **[REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md)** | Recommended code organization and file structure | Setting up the codebase |
 | **[FRONTEND_BACKEND_MAPPING.md](FRONTEND_BACKEND_MAPPING.md)** | Maps frontend pages/components to backend MCPs | Understanding what to build for the UI |
 
@@ -70,7 +70,7 @@ Keeper is a **discovery engine** (not a chatbot) that:
 
 ## 🎯 Project Goals
 
-### MVP Success Criteria (12 weeks)
+### MVP Success Criteria
 - ✅ Nightly discoveries generated for Bashful Beauty (test business)
 - ✅ 5-10 actionable insights with confidence >80%, impact >$1K
 - ✅ Keeper_UI showing real discoveries from backend
@@ -79,7 +79,7 @@ Keeper is a **discovery engine** (not a chatbot) that:
 - ✅ System runs reliably without manual intervention
 
 ### Long-term Vision
-- 100+ small businesses using Keeper within 6 months
+- 100+ small businesses using Keeper
 - Average discovery quality rating > 4.5 stars
 - Measurable ROI for customers (recovered revenue, retained customers)
 - Scale to 1000+ businesses at 92%+ gross margin
@@ -124,36 +124,36 @@ Testing with real business data ensures discoveries are accurate and actionable.
 
 ## 📋 Implementation Phases
 
-### Phase 1: Foundation (Week 1-2)
+### Phase 1: Foundation
 - Set up GCP infrastructure
 - Sync 8 years of Bashful Beauty Square data to BigQuery
 - Build first MCP: `square_data.mcp`
 
-### Phase 2: Core MCPs (Week 3-5)
+### Phase 2: Core MCPs
 - Implement all Layer 1 (Data Access) and Layer 2 (Analysis) MCPs
 - Test each MCP with real data
 - Verify output quality
 
-### Phase 3: Analyst Agent (Week 6-7)
+### Phase 3: Analyst Agent
 - Build Analyst Agent with discovery_mode
 - Integrate Vertex AI Gemini Pro
 - Generate first real discoveries
 
-### Phase 4: Advisor Agent (Week 8-9)
+### Phase 4: Advisor Agent
 - Build Advisor Agent with action planning
 - Implement Action Layer MCPs (scripts, campaigns)
 - Generate complete discoveries with action plans
 
-### Phase 5: API & Integration (Week 10)
+### Phase 5: API & Integration
 - Build FastAPI REST API
 - Deploy to Cloud Run
 - Integrate with Keeper_UI frontend
 
-### Phase 6: External Intelligence (Week 11)
+### Phase 6: External Intelligence
 - Build web scraping for reviews, competitors, social
 - Enhance discoveries with external context
 
-### Phase 7: Testing & Optimization (Week 12)
+### Phase 7: Testing & Optimization
 - Comprehensive testing (unit, integration, e2e)
 - Performance and cost optimization
 - Production readiness
