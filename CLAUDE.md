@@ -58,6 +58,7 @@ This repository serves as the **"cookbook"** - a complete reference for implemen
 
 ### Project Overview
 - **[README.md](README.md)** (8KB, 193 lines) - Repository introduction and navigation
+- **[ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md)** - Visual Mermaid diagrams of the system architecture
 
 ## System Architecture (High-Level)
 
